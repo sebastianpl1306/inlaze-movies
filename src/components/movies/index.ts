@@ -4,3 +4,4 @@ export * from './MoviePercentCircle';
 export * from './AddMovieToFavorites';
 export * from './MovieActorsGrid';
 export * from './ShareMovie';
+export * from './InfoMoviesFavorites';

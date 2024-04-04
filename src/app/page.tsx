@@ -7,7 +7,7 @@ const getMovies = async(page = 1 ) => {
     const data: MovieResponse = await fetch(`https://api.themoviedb.org/3/movie/popular?language=es-ES&page=${page}`, {
       cache: 'force-cache',
       headers: {
-        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJmMWQ5NDBjOWMyNWZmYmVlZDg5MGY1NzMxYzI3YjM4NSIsInN1YiI6IjY2MGM4N2FlOWM5N2JkMDE0OWEzMjQzZSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.gEUOU5GpEXw3xuQXSBeAbforfpEEndBn-AJhmjL__sw'
+        'Authorization': `Bearer ${process.env.TOKEN_MOVIES}`
       }
     }).then((res) => res.json());
 
@@ -22,7 +22,7 @@ export default async function Home() {
 
   return (
     <main className="w-11/12 m-auto text-white mt-2">
-      <h3 className="text-2xl font-extrabold mb-2">Películas populares</h3>
+      <h2 className="text-2xl font-extrabold mb-2">Películas populares</h2>
       <MovieGrid movies={movies}/>
     </main>
   );

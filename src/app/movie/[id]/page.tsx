@@ -1,41 +1,72 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { DetailMovie, CreditsMovie } from '@/interfaces';
+import { transformNameToUrl } from '@/utils';
+import { DetailMovie, CreditsMovie, MovieResponse } from '@/interfaces';
 import { AddMovieToFavorites, MovieActorsGrid, MoviePercentCircle, ShareMovie } from '@/components';
 
 interface Props {
   params: { id: string }
 }
 
+/**
+ * Genera las paginas de manera estática basado en la primera consulta de películas populares
+ * @returns 
+ */
+export async function generateStaticParams() {
+  const data: MovieResponse = await fetch(`https://api.themoviedb.org/3/movie/popular?language=es-ES&page=${1}`, {
+    headers: {
+      'Authorization': `Bearer ${process.env.TOKEN_MOVIES}`
+    }
+  }).then((res) => res.json());
+
+  const staticMovies = data.results.map((movie) => `${movie.id}-${transformNameToUrl(movie.title)}`);
+
+  return staticMovies.map( id => ({ id }));
+}
+
+/**
+ * Permite generar la metadata según la información de la película
+ */
 export async function generateMetadata({ params }:Props): Promise<Metadata>{
   try {
     const { movieDetail } = await getMovie(params.id);
-    const { title, overview } = movieDetail;
+    const { title, overview, original_title } = movieDetail;
 
     return {
-    title: title,
-    description: overview
+      title: `${title} - Inlaze Movies`,
+      description: overview,
+      keywords: ['movies', 'inlaze', 'películas', 'calificaciones películas', 'películas en cartelera', title, original_title]
     }
   } catch (error) {
     return {
       title: 'Inlaze Movies',
-      description: 'Inlaze Movies películas recomendadas'
+      description: 'Inlaze Movies películas recomendadas',
+      keywords: ['movies', 'inlaze', 'películas', 'calificaciones películas', 'películas en cartelera']
     }
   }
 }
 
+/**
+ * Permite buscar una película por el id
+ * @param id id-nombre-de-movie
+ * @returns Película
+ */
 const getMovie = async(id: string): Promise<{ movieDetail: DetailMovie; movieCredits: CreditsMovie;}> => {
   try {
     const movieId = id.split('-')[0];
     const movieDetail = await fetch(`https://api.themoviedb.org/3/movie/${movieId}?language=es-ES`,{
       headers: {
-          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJmMWQ5NDBjOWMyNWZmYmVlZDg5MGY1NzMxYzI3YjM4NSIsInN1YiI6IjY2MGM4N2FlOWM5N2JkMDE0OWEzMjQzZSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.gEUOU5GpEXw3xuQXSBeAbforfpEEndBn-AJhmjL__sw'
+        'Authorization': `Bearer ${process.env.TOKEN_MOVIES}`
       }
     }).then(res => res.json());
 
+    if(!movieDetail.title){
+      notFound();
+    }
+
     const movieCredits = await fetch(`https://api.themoviedb.org/3/movie/${movieId}/credits?language=es-ES`,{
       headers: {
-        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJmMWQ5NDBjOWMyNWZmYmVlZDg5MGY1NzMxYzI3YjM4NSIsInN1YiI6IjY2MGM4N2FlOWM5N2JkMDE0OWEzMjQzZSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.gEUOU5GpEXw3xuQXSBeAbforfpEEndBn-AJhmjL__sw'
+        'Authorization': `Bearer ${process.env.TOKEN_MOVIES}`
       }
     }).then(res => res.json());
 
@@ -72,7 +103,7 @@ export default async function MoviePage({ params }: Props) {
         <article>
           <div className="flex items-center justify-center md:justify-start space-x-2 mb-3 mt-2 md:mt-0">
             <AddMovieToFavorites movie={movieDetail}/>
-            <ShareMovie/>
+            <ShareMovie url={`/movie/${params.id}`}/>
           </div>
           <p>{movieDetail.overview}</p>
           <h2 className='my-4 text-4xl'>Actores</h2>

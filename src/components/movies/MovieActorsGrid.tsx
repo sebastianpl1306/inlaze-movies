@@ -14,6 +14,7 @@ export const MovieActorsGrid = ({ actors }: Props) => {
                     <Image
                         src={`https://media.themoviedb.org/t/p/w220_and_h330_face${actor.profile_path}`}
                         alt={actor.name}
+                        title={actor.name}
                         width={200}
                         height={150}
                     />

@@ -6,7 +6,7 @@ import { DetailMovie, Movie, MovieFavorite } from '@/interfaces';
 import { existInFavorites, toggleFavorites } from '@/utils';
 
 interface Props {
-  movie: Movie | DetailMovie;
+  movie: Movie | DetailMovie | MovieFavorite;
 }
 
 export const AddMovieToFavorites = ({ movie }: Props) => {
